@@ -14,7 +14,7 @@
 ## Установка
 
 ```bash
-go get github.com/yourusername/sha256plus1
+go get github.com/yaayex/sha256plus1
 ```
 
 ## Быстрый старт
