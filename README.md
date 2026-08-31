@@ -1,23 +1,32 @@
 # sha256plus1
+> Немного магии поверх обычного SHA256. Добавил один бит для хорошего настроения (и UTF-8 совместимости).
 
-Независимый Go-модуль для хеширования данных с использованием алгоритма **SHA256+1** — расширенной версии SHA256 с добавлением бита для UTF-8 совместимости.
+[![Go Version](https://img.shields.io/badge/Go-1.21-blue?style=for-the-badge&logo=go)](https://golang.org)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)](https://opensource.org/licenses/MIT)
+[![Go Report Card](https://goreportcard.com/badge/github.com/yaayex/sha256plus1?style=for-the-badge)](https://goreportcard.com/report/github.com/yaayex/sha256plus1)
+[![Tests](https://img.shields.io/badge/Tests-✅-brightgreen?style=for-the-badge)](#-тесты)
+[![Go Reference](https://pkg.go.dev/badge/github.com/yaayex/sha256plus1.svg?style=for-the-badge)](https://pkg.go.dev/github.com/yaayex/sha256plus1)
 
-## Особенности
+## 🤔 Чего не хватило обычному SHA256?
 
-- ✅ **Простой API** — минимум кода для начала работы
-- ✅ **Потокобезопасность** — безопасен для конкурентного использования
-- ✅ **Пакетная обработка** — хеширование нескольких данных параллельно
-- ✅ **Верификация** — встроенная проверка хешей
-- ✅ **Метаданные** — получение информации о хеше
-- ✅ **Производительность** — оптимизировано для высоконагруженных систем
+Всего одного бита. Вроде бы мелочь, но теперь хеши становятся **65 символов** (64 от SHA256 + `1`). Это делает их чуть более уникальными для UTF-8 строк и просто красивее в логах.
 
-## Установка
+## ✨ Что умеет?
+
+- **Просто:** Подключил и забыл. API минималистичный.
+- **Безопасно:** Можно пускать в горутины, ничего не упадет.
+- **Быстро:** Параллельно хеширует кучу данных сразу.
+- **Умнее:** Проверяет целостность и отдает метаданные.
+
+## 🚀 Установка
 
 ```bash
 go get github.com/yaayex/sha256plus1
 ```
 
-## Быстрый старт
+## 🧪 Быстрый старт
+
+Вот как это работает на практике:
 
 ```go
 package main
@@ -28,220 +37,74 @@ import (
 )
 
 func main() {
-	// Создаём хешер
+	// Создаем наш волшебный хешер
 	hasher := sha256plus1.New()
 
 	// Хешируем строку
-	hash := hasher.HashString("Hello, World!")
-	fmt.Println("Hash:", hash)
+	hash := hasher.HashString("Привет, мир!")
+	fmt.Println("Хеш:", hash)
 
-	// Проверяем хеш
-	if hasher.VerifyHashString("Hello, World!", hash) {
-		fmt.Println("✓ Хеш верный")
-	}
-}
-```
-
-## API
-
-### `New() *Hasher`
-Создаёт новый экземпляр хешера.
-
-```go
-hasher := sha256plus1.New()
-```
-
-### `Hash(data []byte) string`
-Хеширует байтовый массив и возвращает хеш в формате строки (65 символов: 64 символа SHA256 + "1").
-
-```go
-hash := hasher.Hash([]byte("data"))
-```
-
-### `HashString(s string) string`
-Хеширует строку.
-
-```go
-hash := hasher.HashString("text")
-```
-
-### `VerifyHash(data []byte, hash string) bool`
-Проверяет, соответствует ли хеш данным.
-
-```go
-isValid := hasher.VerifyHash([]byte("data"), hash)
-```
-
-### `VerifyHashString(s string, hash string) bool`
-Проверяет хеш строки.
-
-```go
-isValid := hasher.VerifyHashString("text", hash)
-```
-
-### `BatchHash(dataList [][]byte) []string`
-Хеширует несколько данных параллельно (потокобезопасно).
-
-```go
-hashes := hasher.BatchHash([][]byte{
-	[]byte("data1"),
-	[]byte("data2"),
-	[]byte("data3"),
-})
-```
-
-### `HashWithMetadata(data []byte) map[string]interface{}`
-Возвращает хеш с метаданными.
-
-```go
-result := hasher.HashWithMetadata([]byte("data"))
-// {
-//   "hash": "abc123...1",
-//   "algorithm": "SHA256+1",
-//   "data_size": 4,
-//   "utf8_bit": "1"
-// }
-```
-
-## Примеры использования
-
-### Хеширование файла
-
-```go
-package main
-
-import (
-	"fmt"
-	"io/ioutil"
-	"github.com/yaayex/sha256plus1"
-)
-
-func main() {
-	hasher := sha256plus1.New()
-	
-	// Читаем файл
-	data, err := ioutil.ReadFile("file.txt")
-	if err != nil {
-		panic(err)
-	}
-	
-	// Хешируем
-	hash := hasher.Hash(data)
-	fmt.Println("File hash:", hash)
-}
-```
-
-### Проверка целостности данных
-
-```go
-package main
-
-import (
-	"fmt"
-	"github.com/yaayex/sha256plus1"
-)
-
-func main() {
-	hasher := sha256plus1.New()
-	
-	// Исходные данные и их хеш
-	originalData := "important data"
-	hash := hasher.HashString(originalData)
-	
-	// Позже проверяем
-	receivedData := "important data"
-	if hasher.VerifyHashString(receivedData, hash) {
-		fmt.Println("✓ Данные не повреждены")
+	// Проверяем, что мы не перепутали данные
+	if hasher.VerifyHashString("Привет, мир!", hash) {
+		fmt.Println("✅ Всё ок, данные целы")
 	} else {
-		fmt.Println("✗ Данные повреждены или изменены")
+		fmt.Println("❌ Ой, что-то пошло не так")
 	}
 }
 ```
 
-### Пакетная обработка
+## 🛠 API (кратко)
 
-```go
-package main
+| Метод | Что делает |
+| :--- | :--- |
+| `New()` | Создает экземпляр хешера. |
+| `Hash(data []byte)` | Хешит байты. Возвращает 65 символов. |
+| `HashString(s string)` | Хешит строку. Удобно для текста. |
+| `VerifyHash(...)` | Проверяет, совпадает ли хеш с данными. |
+| `BatchHash(...)` | Хезит много данных сразу (в параллель). |
+| `HashWithMetadata(...)` | Возвращает хеш + инфу о размере и алгоритме. |
 
-import (
-	"fmt"
-	"github.com/yaayex/sha256plus1"
-)
+## 📊 Как это выглядит «под капотом»?
 
-func main() {
-	hasher := sha256plus1.New()
-	
-	files := [][]byte{
-		[]byte("file1.txt content"),
-		[]byte("file2.txt content"),
-		[]byte("file3.txt content"),
-	}
-	
-	hashes := hasher.BatchHash(files)
-	for i, hash := range hashes {
-		fmt.Printf("File %d: %s\n", i+1, hash)
-	}
-}
+```mermaid
+graph LR
+    A[Данные] --> B{SHA256}
+    B --> C[64 символа]
+    C --> D[+ Бит '1']
+    D --> E[65 символов]
+    E --> F{Верификация?}
+    F -->|Да| G[ОК]
+    F -->|Нет| H[Ошибка]
 ```
 
-## Тестирование
+## 🧪 Тесты и бенчмарки
 
-Запуск тестов:
-
+Запускаем тесты:
 ```bash
 go test -v
 ```
 
-Бенчмарк:
-
+Запускаем замеры:
 ```bash
 go test -bench=. -benchmem
 ```
 
-## Формат хеша
+## 📝 Формат хеша
 
-Хеш SHA256+1 состоит из:
-- **64 символа** — стандартный SHA256 в hex-формате
-- **1 символ** — "1" (бит для UTF-8 совместимости)
-
-**Пример:**
+Стандартный SHA256 + наш фирменный бит:
 ```
 a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae31
+                                                                    ↑
+                                                                    Вот этот бит
 ```
 
-## Производительность
+## 🤝 Вклад
 
-На машине с процессором Intel i7:
-- Хеширование 1 МБ данных: ~0.5 мс
-- Пакетное хеширование 1000 элементов: ~50 мс
+Любые PR и ишьюсы приветствуются. Если нашли баг — скидывайте, исправим. Если есть идея — пишите, обсудим.
 
-## Потокобезопасность
+## 📄 Лицензия
 
-Модуль полностью потокобезопасен благодаря использованию `sync.RWMutex` и `sync.WaitGroup`.
+MIT — делай что хочешь, только не ссылайся на меня, если что-то сломается. 😉
 
-```go
-// Можно использовать один хешер из разных горутин
-hasher := sha256plus1.New()
-
-go func() {
-	hash1 := hasher.HashString("data1")
-	fmt.Println(hash1)
-}()
-
-go func() {
-	hash2 := hasher.HashString("data2")
-	fmt.Println(hash2)
-}()
-```
-
-## Лицензия
-
-MIT License — свободно используйте в своих проектах.
-
-## Вклад
-
-Приветствуются pull requests и issues!
-
-## Автор
-
-Yaayex — https://github.com/Yaayex
+---
+*Сделано с любовью к хешам от [Yaayex](https://github.com/Yaayex)*
